@@ -1,0 +1,183 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class Aviao {
+    private int numero;
+    private int assentosDisponiveis;
+
+    public Aviao(int numero, int assentosDisponiveis) {
+        this.numero = numero;
+        this.assentosDisponiveis = assentosDisponiveis;
+    }
+
+    public int getNumero() {
+        return numero;
+    }
+
+    public int getAssentosDisponiveis() {
+        return assentosDisponiveis;
+    }
+
+    public boolean reservarAssento() {
+        if (assentosDisponiveis > 0) {
+            assentosDisponiveis--;
+            return true;
+        }
+        return false;
+    }
+}
+
+class Reserva {
+    private int numeroAviao;
+    private String nomePassageiro;
+
+    public Reserva(int numeroAviao, String nomePassageiro) {
+        this.numeroAviao = numeroAviao;
+        this.nomePassageiro = nomePassageiro;
+    }
+
+    public int getNumeroAviao() {
+        return numeroAviao;
+    }
+
+    public String getNomePassageiro() {
+        return nomePassageiro;
+    }
+}
+
+class SistemaReservas {
+    private ArrayList<Aviao> avioes;
+    private ArrayList<Reserva> reservas;
+    private static final int MAX_AVIOES = 4;
+    private static final int MAX_RESERVAS = 20;
+    private Scanner scanner;
+
+    public SistemaReservas() {
+        this.avioes = new ArrayList<>();
+        this.reservas = new ArrayList<>();
+        this.scanner = new Scanner(System.in);
+    }
+
+    public void executar() {
+        int opcao;
+        do {
+            System.out.println("\n===== Menu Sweet Flight =====");
+            System.out.println("1. Registrar aviões");
+            System.out.println("2. Registrar assentos");
+            System.out.println("3. Reservar passagem");
+            System.out.println("4. Consultar reservas por avião");
+            System.out.println("5. Consultar reservas por passageiro");
+            System.out.println("6. Encerrar");
+            System.out.print("Escolha uma opção: ");
+            opcao = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (opcao) {
+                case 1 -> registrarAvioes();
+                case 2 -> registrarAssentos();
+                case 3 -> reservarPassagem();
+                case 4 -> consultarPorAviao();
+                case 5 -> consultarPorPassageiro();
+                case 6 -> System.out.println("Encerrando o sistema...");
+                default -> System.out.println("Opção inválida!");
+            }
+        } while (opcao != 6);
+    }
+
+    private void registrarAvioes() {
+        avioes.clear();
+        for (int i = 0; i < MAX_AVIOES; i++) {
+            System.out.print("Informe o número do avião " + (i + 1) + ": ");
+            int numeroAviao = scanner.nextInt();
+            scanner.nextLine();
+            avioes.add(new Aviao(numeroAviao, 0));
+        }
+        System.out.println("Aviões registrados com sucesso.");
+    }
+
+    private void registrarAssentos() {
+        for (Aviao aviao : avioes) {
+            System.out.print("Informe a quantidade de assentos para o avião " + aviao.getNumero() + ": ");
+            int assentos = scanner.nextInt();
+            scanner.nextLine();
+            avioes.set(avioes.indexOf(aviao), new Aviao(aviao.getNumero(), assentos));
+        }
+        System.out.println("Assentos registrados com sucesso.");
+    }
+
+    private void reservarPassagem() {
+        if (reservas.size() >= MAX_RESERVAS) {
+            System.out.println("Limite de reservas atingido!");
+            return;
+        }
+        System.out.print("Informe o número do avião: ");
+        int numeroAviao = scanner.nextInt();
+        scanner.nextLine();
+        Aviao aviao = encontrarAviao(numeroAviao);
+        if (aviao == null) {
+            System.out.println("Este avião não existe!");
+            return;
+        }
+        if (aviao.getAssentosDisponiveis() == 0) {
+            System.out.println("Não há assentos disponíveis para este avião!");
+            return;
+        }
+        System.out.print("Informe o nome do passageiro: ");
+        String nomePassageiro = scanner.nextLine();
+        if (aviao.reservarAssento()) {
+            reservas.add(new Reserva(numeroAviao, nomePassageiro));
+            System.out.println("Reserva realizada com sucesso!");
+        }
+    }
+
+    private void consultarPorAviao() {
+        System.out.print("Informe o número do avião: ");
+        int numeroAviao = scanner.nextInt();
+        scanner.nextLine();
+        Aviao aviao = encontrarAviao(numeroAviao);
+        if (aviao == null) {
+            System.out.println("Este avião não existe!");
+            return;
+        }
+        boolean encontrou = false;
+        for (Reserva reserva : reservas) {
+            if (reserva.getNumeroAviao() == numeroAviao) {
+                System.out.println("Passageiro: " + reserva.getNomePassageiro());
+                encontrou = true;
+            }
+        }
+        if (!encontrou) {
+            System.out.println("Não há reservas realizadas para este avião!");
+        }
+    }
+
+    private void consultarPorPassageiro() {
+        System.out.print("Informe o nome do passageiro: ");
+        String nomePassageiro = scanner.nextLine();
+        boolean encontrou = false;
+        for (Reserva reserva : reservas) {
+            if (reserva.getNomePassageiro().equalsIgnoreCase(nomePassageiro)) {
+                System.out.println("Avião: " + reserva.getNumeroAviao());
+                encontrou = true;
+            }
+        }
+        if (!encontrou) {
+            System.out.println("Não há reservas realizadas para este passageiro!");
+        }
+    }
+
+    private Aviao encontrarAviao(int numero) {
+        for (Aviao aviao : avioes) {
+            if (aviao.getNumero() == numero) {
+                return aviao;
+            }
+        }
+        return null;
+    }
+}
+
+public class SweetFlight {
+    public static void main(String[] args) {
+        new SistemaReservas().executar();
+    }
+}
